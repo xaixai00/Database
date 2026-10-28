@@ -1,4 +1,4 @@
-# MotoShop — local motorcycle parts store (Rust)
+# JCS MotorParts — local motorcycle parts store (Rust)
 
 Two Windows executables that share one local SQLite database:
 

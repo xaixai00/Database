@@ -59,7 +59,7 @@ async fn main() {
         .with_state(db.clone());
 
     let addr = std::env::var("ADMIN_ADDR").unwrap_or_else(|_| "127.0.0.1:8081".into());
-    web::run(app, &addr, "Shop — Admin", &db).await;
+    web::run(app, &addr, "JCS MotorParts — Admin", &db).await;
 }
 
 /// Reject requests whose Host isn't this machine (blocks DNS-rebinding tricks).

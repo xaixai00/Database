@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Store</title>
+<title>JCS MotorParts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
 <link rel="stylesheet" href="/static/base.css">
@@ -118,7 +118,7 @@
 <!-- ================= Sign in / Sign up ================= -->
 <div id="auth" class="auth-screen hidden">
   <section class="auth-hero">
-    <div class="brand"><span class="brand-mark" role="img" aria-label="JCS logo"></span><span class="shop-name">Store</span></div>
+    <div class="brand"><span class="brand-mark" role="img" aria-label="JCS logo"></span><span class="shop-name">JCS MotorParts</span></div>
     <div>
       <h1>Parts that <span>keep you</span> riding.</h1>
       <p class="shop-tagline"></p>
@@ -159,7 +159,7 @@
 <div id="app" class="hidden">
   <header class="topbar">
     <div class="wrap">
-      <div class="brand"><span class="brand-mark" role="img" aria-label="JCS logo"></span><span class="shop-name">Store</span></div>
+      <div class="brand"><span class="brand-mark" role="img" aria-label="JCS logo"></span><span class="shop-name">JCS MotorParts</span></div>
       <nav class="tabs">
         <button class="tab" data-view="home">Home</button>
         <button class="tab" data-view="products">Products</button>
@@ -179,7 +179,7 @@
     <section id="view-home" class="view hidden">
       <div class="hero">
         <div class="eyebrow">Welcome, <span id="hero-name"></span></div>
-        <h1 class="shop-name">Store</h1>
+        <h1 class="shop-name">JCS MotorParts</h1>
         <p class="shop-tagline"></p>
         <button class="btn primary lg" data-goto="products">Browse all parts →</button>
       </div>
@@ -287,7 +287,7 @@ const ICONS = {
   part: '<svg class="ph" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><circle cx="32" cy="32" r="26"/><circle cx="32" cy="32" r="9"/><circle cx="32" cy="14" r="2.5" fill="currentColor"/><circle cx="32" cy="50" r="2.5" fill="currentColor"/><circle cx="14" cy="32" r="2.5" fill="currentColor"/><circle cx="50" cy="32" r="2.5" fill="currentColor"/><circle cx="19.3" cy="19.3" r="2.5" fill="currentColor"/><circle cx="44.7" cy="44.7" r="2.5" fill="currentColor"/><circle cx="44.7" cy="19.3" r="2.5" fill="currentColor"/><circle cx="19.3" cy="44.7" r="2.5" fill="currentColor"/></svg>',
 };
 
-const state = { user: null, settings: { shop_name: 'Store', tagline: '', currency: '₱' }, cart: null,
+const state = { user: null, settings: { shop_name: 'JCS MotorParts', tagline: '', currency: '₱' }, cart: null,
   products: [], categories: [], category: '', q: '', current: null, variationId: null };
 
 const $ = (s, el = document) => el.querySelector(s);

@@ -55,7 +55,7 @@ async fn main() {
         .with_state(db.clone());
 
     let addr = std::env::var("CUSTOMER_ADDR").unwrap_or_else(|_| "127.0.0.1:8080".into());
-    web::run(app, &addr, "Shop — Customer Store", &db).await;
+    web::run(app, &addr, "JCS MotorParts — Customer Store", &db).await;
 }
 
 // ---------------------------------------------------------------------------

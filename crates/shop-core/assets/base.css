@@ -82,6 +82,8 @@ h1, h2, h3, .display {
   -webkit-mask: url("/static/jcs-logo.svg") center / contain no-repeat;
           mask: url("/static/jcs-logo.svg") center / contain no-repeat;
 }
+/* The shop name keeps the exact casing set in Store settings (e.g. "JCS MotorParts"). */
+.shop-name { text-transform: none !important; letter-spacing: 0; }
 .brand small { font: 600 11px/1 var(--body); letter-spacing: .14em; color: var(--muted); margin-left: 4px; }
 .tabs { display: flex; gap: 4px; margin-left: 12px; }
 .tab {

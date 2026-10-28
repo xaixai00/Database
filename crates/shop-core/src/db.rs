@@ -220,7 +220,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            shop_name: "MotoParts Shop".into(),
+            shop_name: "JCS MotorParts".into(),
             tagline: "Genuine and aftermarket motorcycle parts, ready to ride.".into(),
             currency: "₱".into(),
         }
