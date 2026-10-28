@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="/static/base.css">
+<style>
+  /* ---------- auth screen ---------- */
+  .auth-screen { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+  .auth-hero {
+    position: relative; overflow: hidden; padding: 48px; display: flex; flex-direction: column; justify-content: space-between;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.025) 0 2px, transparent 2px 14px),
+      linear-gradient(160deg, #1d2024, #0f1012 70%);
+    border-right: 1px solid var(--line);
+  }
+  .auth-hero::after {
+    content: ""; position: absolute; right: -140px; bottom: -140px; width: 460px; height: 460px; border-radius: 50%;
+    border: 38px solid rgba(255,107,26,.12); box-shadow: inset 0 0 0 26px rgba(255,107,26,.05);
+  }
+  .auth-hero h1 { font-size: clamp(48px, 6vw, 86px); text-transform: uppercase; max-width: 9ch; }
+  .auth-hero h1 span { color: var(--accent); }
+  .auth-hero p { color: var(--muted); max-width: 40ch; font-size: 18px; margin: 18px 0 0; }
+  .auth-side { display: grid; place-items: center; padding: 32px 20px; }
+  .auth-card { width: min(420px, 100%); display: grid; gap: 18px; }
+  .auth-card h2 { font-size: 38px; text-transform: uppercase; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+  .seg button { appearance: none; border: 0; background: none; color: var(--muted); padding: 10px; border-radius: 9px; font: 600 15px/1 var(--body); cursor: pointer; }
+  .seg button.active { background: var(--panel-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+  .auth-card form { display: grid; gap: 14px; }
+
+  /* ---------- home ---------- */
+  .hero {
+    margin: 28px 0 34px; padding: 44px 40px; border-radius: 20px; position: relative; overflow: hidden;
+    background:
+      radial-gradient(500px 260px at 100% 0%, rgba(255,107,26,.22), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.03) 0 2px, transparent 2px 16px),
+      var(--panel);
+    border: 1px solid var(--line);
+  }
+  .hero h1 { font-size: clamp(40px, 5.5vw, 72px); text-transform: uppercase; max-width: 14ch; margin-top: 10px; }
+  .hero p { color: var(--muted); font-size: 18px; max-width: 52ch; margin: 14px 0 24px; }
+  .section-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
+  .section-head h2 { font-size: 34px; text-transform: uppercase; }
+  main { padding-bottom: 60px; }
+  .view { animation: fade .2s ease; }
+
+  /* ---------- products ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0 18px; }
+  .toolbar .search { flex: 1 1 280px; position: relative; }
+  .toolbar .search input { padding-left: 40px; }
+  .toolbar .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; color: var(--faint); }
+  .count { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+
+  /* ---------- product modal ---------- */
+  .pd { display: grid; grid-template-columns: 1fr 1fr; }
+  .pd-media { background: linear-gradient(135deg, #24282d, #16181b); min-height: 100%; display: grid; place-items: center; border-right: 1px solid var(--line); }
+  .pd-media img { width: 100%; height: 100%; object-fit: cover; max-height: 640px; }
+  .pd-media .ph { width: 40%; color: #3d434a; }
+  .pd-info { padding: 30px 30px 26px; display: grid; gap: 20px; align-content: start; }
+  .pd-block { display: grid; gap: 9px; }
+  .pd-label { font: 600 11px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+  .pd-name { font-size: 40px; text-transform: uppercase; padding-right: 36px; }
+  .pd-desc { color: #c9c7c2; margin: 0; white-space: pre-line; }
+  .pd-price { font: 700 34px/1 var(--display); color: var(--accent-2); }
+  .pd-features { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+  .pd-features li { display: flex; gap: 10px; align-items: baseline; }
+  .pd-features li::before { content: ""; width: 7px; height: 7px; flex: none; background: var(--accent); transform: rotate(45deg) translateY(-2px); }
+  .pd-buy { display: flex; gap: 12px; align-items: center; padding-top: 18px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .pd-buy .btn { flex: 1; }
+  .pd-none { color: var(--faint); font-size: 14px; }
+
+  /* ---------- cart ---------- */
+  .cart-layout { display: grid; grid-template-columns: 1fr 340px; gap: 22px; align-items: start; margin-top: 28px; }
+  .cart-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .cart-head h1 { font-size: 46px; text-transform: uppercase; }
+  .line { display: grid; grid-template-columns: 88px 1fr auto; gap: 16px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  .line:last-child { border-bottom: 0; }
+  .line .thumb { width: 88px; aspect-ratio: 1; border-radius: 10px; }
+  .line .thumb .ph { width: 54%; }
+  .line-name { font: 700 20px/1.1 var(--display); cursor: pointer; }
+  .line-name:hover { color: var(--accent-2); }
+  .line-meta { color: var(--muted); font-size: 14px; margin-top: 3px; }
+  .line-right { display: grid; justify-items: end; gap: 10px; }
+  .line-total { font: 700 18px/1 var(--body); }
+  .line-actions { display: flex; align-items: center; gap: 10px; }
+  .summary { position: sticky; top: 84px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; color: var(--muted); }
+  .summary-row.total { color: var(--text); font: 700 26px/1 var(--display); border-top: 1px solid var(--line); margin-top: 8px; padding-top: 18px; }
+
+  .user-chip { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--panel-2); border: 1px solid var(--line-2); display: grid; place-items: center; font-weight: 700; color: var(--text); }
+
+  @media (max-width: 860px) {
+    .auth-screen { grid-template-columns: 1fr; }
+    .auth-hero { padding: 32px 24px; min-height: 240px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .auth-hero h1 { font-size: 46px; }
+    .pd { grid-template-columns: 1fr; }
+    .pd-media { border-right: 0; border-bottom: 1px solid var(--line); aspect-ratio: 4/3; min-height: 0; }
+    .pd-info { padding: 22px 20px; }
+    .pd-name { font-size: 32px; }
+    .cart-layout { grid-template-columns: 1fr; }
+    .summary { position: static; }
+    .hero { padding: 30px 22px; }
+    .line { grid-template-columns: 64px 1fr; }
+    .line .thumb { width: 64px; }
+    .line-right { grid-column: 1 / -1; grid-auto-flow: column; justify-content: space-between; align-items: center; }
+    .user-chip .who { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= Sign in / Sign up ================= -->
+<div id="auth" class="auth-screen hidden">
+  <section class="auth-hero">
+    <div class="brand"><span class="brand-mark" data-icon="mark"></span><span class="shop-name">Store</span></div>
+    <div>
+      <h1>Parts that <span>keep you</span> riding.</h1>
+      <p class="shop-tagline"></p>
+    </div>
+    <div class="muted" style="font-size:13px">Sign in to browse the catalog and build your cart.</div>
+  </section>
+  <section class="auth-side">
+    <div class="auth-card">
+      <div>
+        <div class="eyebrow" id="auth-eyebrow">Welcome back</div>
+        <h2 id="auth-title" style="margin-top:8px">Sign in</h2>
+      </div>
+      <div class="seg" role="tablist">
+        <button type="button" data-mode="login" class="active">Sign in</button>
+        <button type="button" data-mode="signup">Create account</button>
+      </div>
+      <form id="auth-form" novalidate>
+        <label class="field signup-only hidden">Full name
+          <input type="text" name="name" autocomplete="name" placeholder="Juan Dela Cruz">
+        </label>
+        <label class="field">Email
+          <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+        </label>
+        <label class="field">Password
+          <input type="password" name="password" autocomplete="current-password" placeholder="At least 6 characters" required>
+        </label>
+        <label class="field signup-only hidden">Confirm password
+          <input type="password" name="confirm" autocomplete="new-password">
+        </label>
+        <div class="form-error" id="auth-error"></div>
+        <button class="btn primary lg block" type="submit" id="auth-submit">Sign in</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- ================= Store ================= -->
+<div id="app" class="hidden">
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand"><span class="brand-mark" data-icon="mark"></span><span class="shop-name">Store</span></div>
+      <nav class="tabs">
+        <button class="tab" data-view="home">Home</button>
+        <button class="tab" data-view="products">Products</button>
+        <button class="tab" data-view="cart">Cart <span class="badge hidden" id="cart-badge">0</span></button>
+      </nav>
+      <div class="spacer"></div>
+      <div class="user-chip">
+        <span class="avatar" id="avatar">?</span>
+        <span class="who" id="who"></span>
+        <button class="btn ghost sm" id="logout">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Home -->
+    <section id="view-home" class="view hidden">
+      <div class="hero">
+        <div class="eyebrow">Welcome, <span id="hero-name"></span></div>
+        <h1 class="shop-name">Store</h1>
+        <p class="shop-tagline"></p>
+        <button class="btn primary lg" data-goto="products">Browse all parts →</button>
+      </div>
+      <div class="section-head">
+        <div><div class="eyebrow">Hand-picked</div><h2 style="margin-top:6px">Featured parts</h2></div>
+        <button class="btn ghost" data-goto="products">View all</button>
+      </div>
+      <div id="featured-grid" class="grid"></div>
+    </section>
+
+    <!-- Products -->
+    <section id="view-products" class="view hidden">
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="search" placeholder="Search parts, categories or motorcycle models…">
+        </div>
+      </div>
+      <div class="chips" id="categories" style="margin-bottom:18px"></div>
+      <div class="count" id="product-count"></div>
+      <div id="product-grid" class="grid"></div>
+    </section>
+
+    <!-- Cart -->
+    <section id="view-cart" class="view hidden">
+      <div class="cart-layout">
+        <div>
+          <div class="cart-head">
+            <div><div class="eyebrow">Your picks</div><h1 style="margin-top:6px">Cart</h1></div>
+            <button class="btn" data-goto="products">+ Add more items</button>
+          </div>
+          <div id="cart-lines"></div>
+        </div>
+        <aside class="panel summary" id="cart-summary">
+          <div class="panel-head"><h2>Summary</h2></div>
+          <div class="panel-body">
+            <div class="summary-row"><span>Items</span><span id="sum-items">0</span></div>
+            <div class="summary-row"><span>Different parts</span><span id="sum-lines">0</span></div>
+            <div class="summary-row total"><span>Total</span><span id="sum-total">0</span></div>
+            <button class="btn block" style="margin-top:18px" data-goto="products">Continue shopping</button>
+            <button class="btn ghost danger block" style="margin-top:8px" id="clear-cart">Empty cart</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= Product popup ================= -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="icon-btn modal-close" id="modal-close" aria-label="Close">×</button>
+    <div class="pd">
+      <div class="pd-media" id="pd-media"></div>
+      <div class="pd-info">
+        <!-- 1. Main item -->
+        <div class="pd-block">
+          <div class="eyebrow" id="pd-cat"></div>
+          <h2 class="pd-name" id="pd-name"></h2>
+        </div>
+        <!-- 2. Description -->
+        <div class="pd-block">
+          <div class="pd-label">Description</div>
+          <p class="pd-desc" id="pd-desc"></p>
+        </div>
+        <!-- 3. Sell price -->
+        <div class="pd-block">
+          <div class="pd-label">Price</div>
+          <div class="pd-price" id="pd-price"></div>
+        </div>
+        <!-- 4. Variations -->
+        <div class="pd-block" id="pd-var-block">
+          <div class="pd-label">Variations</div>
+          <div class="chips" id="pd-vars"></div>
+        </div>
+        <!-- 5. Features -->
+        <div class="pd-block" id="pd-feat-block">
+          <div class="pd-label">Features</div>
+          <ul class="pd-features" id="pd-features"></ul>
+        </div>
+        <!-- 6. Available for -->
+        <div class="pd-block" id="pd-fit-block">
+          <div class="pd-label">Available for</div>
+          <div class="chips" id="pd-fits"></div>
+        </div>
+        <!-- 7. Add to cart + quantity -->
+        <div class="pd-buy">
+          <div class="stepper" aria-label="Quantity">
+            <button type="button" id="qty-minus" aria-label="Decrease">−</button>
+            <input type="number" id="qty" value="1" min="1" max="999" inputmode="numeric">
+            <button type="button" id="qty-plus" aria-label="Increase">+</button>
+          </div>
+          <button class="btn primary lg" id="add-to-cart">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const ICONS = {
+  mark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg>',
+  part: '<svg class="ph" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><circle cx="32" cy="32" r="26"/><circle cx="32" cy="32" r="9"/><circle cx="32" cy="14" r="2.5" fill="currentColor"/><circle cx="32" cy="50" r="2.5" fill="currentColor"/><circle cx="14" cy="32" r="2.5" fill="currentColor"/><circle cx="50" cy="32" r="2.5" fill="currentColor"/><circle cx="19.3" cy="19.3" r="2.5" fill="currentColor"/><circle cx="44.7" cy="44.7" r="2.5" fill="currentColor"/><circle cx="44.7" cy="19.3" r="2.5" fill="currentColor"/><circle cx="19.3" cy="44.7" r="2.5" fill="currentColor"/></svg>',
+};
+
+const state = { user: null, settings: { shop_name: 'Store', tagline: '', currency: '₱' }, cart: null,
+  products: [], categories: [], category: '', q: '', current: null, variationId: null };
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = (cents) => state.settings.currency + (cents / 100).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+let toastTimer;
+function toast(msg, error = false) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'show' + (error ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.className = ''), 2600);
+}
+
+async function api(path, { method = 'GET', body } = {}) {
+  const res = await fetch(path, {
+    method,
+    headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: 'same-origin',
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!res.ok) {
+    if (res.status === 401 && !path.startsWith('/api/auth/')) { showAuth(); }
+    const err = new Error((data && data.error) || text || res.statusText);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+$$('[data-icon]').forEach(el => (el.innerHTML = ICONS[el.dataset.icon]));
+
+function thumbHtml(imageId, alt) {
+  return imageId ? `<img src="/images/${imageId}" alt="${esc(alt)}" loading="lazy">` : ICONS.part;
+}
+
+function priceRange(p) {
+  const prices = p.variations.length ? p.variations.map(v => v.price_cents ?? p.price_cents) : [p.price_cents];
+  const min = Math.min(...prices), max = Math.max(...prices);
+  return min === max ? money(min) : `<small>from</small> ${money(min)}`;
+}
+
+function cardHtml(p) {
+  return `<button class="card" data-product="${p.id}">
+    <div class="thumb">${thumbHtml(p.image_id, p.name)}</div>
+    <div class="card-body">
+      <div class="card-cat">${esc(p.category || 'Part')}</div>
+      <div class="card-name">${esc(p.name)}</div>
+      <div class="card-price">${priceRange(p)}</div>
+    </div>
+  </button>`;
+}
+
+/* ---------------- settings ---------------- */
+async function loadSettings() {
+  try { state.settings = await api('/api/settings'); } catch {}
+  document.title = state.settings.shop_name;
+  $$('.shop-name').forEach(el => (el.textContent = state.settings.shop_name));
+  $$('.shop-tagline').forEach(el => (el.textContent = state.settings.tagline));
+}
+
+/* ---------------- auth ---------------- */
+let authMode = 'login';
+function setAuthMode(mode) {
+  authMode = mode;
+  $$('.seg button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  $$('.signup-only').forEach(el => el.classList.toggle('hidden', mode !== 'signup'));
+  $('#auth-title').textContent = mode === 'signup' ? 'Create account' : 'Sign in';
+  $('#auth-eyebrow').textContent = mode === 'signup' ? 'New here?' : 'Welcome back';
+  $('#auth-submit').textContent = mode === 'signup' ? 'Create account' : 'Sign in';
+  $('#auth-form [name=password]').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+  $('#auth-error').textContent = '';
+}
+$$('.seg button').forEach(b => b.addEventListener('click', () => setAuthMode(b.dataset.mode)));
+
+$('#auth-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const email = String(f.get('email') || '').trim();
+  const password = String(f.get('password') || '');
+  const err = $('#auth-error');
+  err.textContent = '';
+  if (!email || !password) { err.textContent = 'Please enter your email and password.'; return; }
+  let body = { email, password }, path = '/api/auth/login';
+  if (authMode === 'signup') {
+    const name = String(f.get('name') || '').trim();
+    if (!name) { err.textContent = 'Please enter your name.'; return; }
+    if (password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
+    if (password !== f.get('confirm')) { err.textContent = "Passwords don't match."; return; }
+    body.name = name; path = '/api/auth/signup';
+  }
+  const btn = $('#auth-submit');
+  btn.disabled = true;
+  try {
+    state.user = await api(path, { method: 'POST', body });
+    e.target.reset();
+    await enterStore();
+    toast(authMode === 'signup' ? `Welcome, ${state.user.name}!` : `Signed in as ${state.user.name}`);
+  } catch (ex) {
+    err.textContent = ex.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+function showAuth() {
+  state.user = null;
+  closeModal();
+  $('#app').classList.add('hidden');
+  $('#auth').classList.remove('hidden');
+  $('#auth-form [name=email]').focus({ preventScroll: true });
+}
+
+$('#logout').addEventListener('click', async () => {
+  try { await api('/api/auth/logout', { method: 'POST' }); } catch {}
+  showAuth();
+  setAuthMode('login');
+});
+
+async function enterStore() {
+  $('#auth').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  const u = state.user;
+  $('#who').textContent = u.name;
+  $('#hero-name').textContent = u.name.split(' ')[0];
+  $('#avatar').textContent = (u.name.trim()[0] || '?').toUpperCase();
+  await Promise.all([refreshCart(), loadCategories()]);
+  route();
+}
+
+/* ---------------- routing ---------------- */
+function go(view) { location.hash = view; }
+function route() {
+  if (!state.user) return;
+  const view = ['home', 'products', 'cart'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  $$('.view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-' + view));
+  if (view === 'home') loadFeatured();
+  if (view === 'products') loadProducts();
+  if (view === 'cart') renderCart();
+  window.scrollTo({ top: 0 });
+}
+window.addEventListener('hashchange', route);
+$$('.tab').forEach(t => t.addEventListener('click', () => go(t.dataset.view)));
+document.addEventListener('click', (e) => {
+  const g = e.target.closest('[data-goto]');
+  if (g) go(g.dataset.goto);
+  const card = e.target.closest('[data-product]');
+  if (card) openProduct(Number(card.dataset.product));
+});
+
+/* ---------------- home ---------------- */
+async function loadFeatured() {
+  const grid = $('#featured-grid');
+  try {
+    const items = await api('/api/featured');
+    grid.innerHTML = items.length ? items.map(cardHtml).join('') :
+      `<div class="empty" style="grid-column:1/-1"><h3>Nothing featured yet</h3><div>Check out the full catalog in the Products tab.</div><button class="btn primary" data-goto="products">Browse products</button></div>`;
+  } catch (e) { if (e.status !== 401) toast(e.message, true); }
+}
+
+/* ---------------- products ---------------- */
+async function loadCategories() {
+  try { state.categories = await api('/api/categories'); } catch { state.categories = []; }
+  if (state.category && !state.categories.includes(state.category)) state.category = '';
+  renderCategories();
+}
+function renderCategories() {
+  const all = ['', ...state.categories];
+  $('#categories').innerHTML = all.map(c =>
+    `<button class="chip ${c === state.category ? 'active' : ''}" data-cat="${esc(c)}">${c ? esc(c) : 'All parts'}</button>`).join('');
+}
+$('#categories').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-cat]');
+  if (!b) return;
+  state.category = b.dataset.cat;
+  renderCategories();
+  loadProducts();
+});
+
+let searchTimer;
+$('#search').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { state.q = e.target.value; loadProducts(); }, 200);
+});
+
+let productSeq = 0;
+async function loadProducts() {
+  const seq = ++productSeq;
+  const params = new URLSearchParams({ q: state.q, category: state.category });
+  try {
+    const items = await api('/api/products?' + params);
+    if (seq !== productSeq) return;
+    state.products = items;
+    $('#product-count').textContent = `${items.length} part${items.length === 1 ? '' : 's'}`;
+    $('#product-grid').innerHTML = items.length ? items.map(cardHtml).join('') :
+      `<div class="empty" style="grid-column:1/-1"><h3>No parts found</h3><div>${state.q || state.category ? 'Try a different search or category.' : 'The shop hasn’t added any products yet.'}</div></div>`;
+  } catch (e) { if (e.status !== 401) toast(e.message, true); }
+}
+
+/* ---------------- product popup ---------------- */
+async function openProduct(id) {
+  let p;
+  try { p = await api('/api/products/' + id); } catch (e) { if (e.status !== 401) toast(e.message, true); return; }
+  state.current = p;
+  state.variationId = p.variations.length ? p.variations[0].id : null;
+
+  $('#pd-media').innerHTML = thumbHtml(p.image_id, p.name);
+  $('#pd-cat').textContent = p.category || 'Part';
+  $('#pd-name').textContent = p.name;
+  $('#pd-desc').textContent = p.description || 'No description provided.';
+
+  $('#pd-var-block').classList.toggle('hidden', !p.variations.length);
+  renderVariations();
+
+  $('#pd-features').innerHTML = p.features.length ? p.features.map(f => `<li>${esc(f)}</li>`).join('') : '<li class="pd-none" style="list-style:none">No features listed.</li>';
+  $('#pd-fits').innerHTML = p.available_for.length ? p.available_for.map(m => `<span class="chip">${esc(m)}</span>`).join('') : '<span class="pd-none">Universal / not specified</span>';
+
+  $('#qty').value = 1;
+  syncQty();
+  $('#modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $('#modal .modal-box').scrollTop = 0;
+}
+
+function currentPrice() {
+  const p = state.current;
+  const v = p.variations.find(v => v.id === state.variationId);
+  return v && v.price_cents != null ? v.price_cents : p.price_cents;
+}
+
+function renderVariations() {
+  const p = state.current;
+  $('#pd-vars').innerHTML = p.variations.map(v => {
+    const extra = v.price_cents != null && v.price_cents !== p.price_cents ? ` · ${money(v.price_cents)}` : '';
+    return `<button class="chip ${v.id === state.variationId ? 'active' : ''}" data-var="${v.id}">${esc(v.name)}${extra}</button>`;
+  }).join('');
+  updatePrice();
+}
+
+function updatePrice() {
+  const qty = clampQty($('#qty').value);
+  const unit = currentPrice();
+  $('#pd-price').textContent = money(unit);
+  $('#add-to-cart').textContent = `Add to cart · ${money(unit * qty)}`;
+}
+
+$('#pd-vars').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-var]');
+  if (!b) return;
+  state.variationId = Number(b.dataset.var);
+  renderVariations();
+});
+
+const clampQty = (v) => Math.max(1, Math.min(999, Math.floor(Number(v)) || 1));
+function syncQty() {
+  const q = clampQty($('#qty').value);
+  $('#qty').value = q;
+  $('#qty-minus').disabled = q <= 1;
+  $('#qty-plus').disabled = q >= 999;
+  updatePrice();
+}
+$('#qty-minus').addEventListener('click', () => { $('#qty').value = clampQty($('#qty').value) - 1; syncQty(); });
+$('#qty-plus').addEventListener('click', () => { $('#qty').value = clampQty($('#qty').value) + 1; syncQty(); });
+$('#qty').addEventListener('change', syncQty);
+$('#qty').addEventListener('input', () => { if ($('#qty').value !== '') updatePrice(); });
+
+$('#add-to-cart').addEventListener('click', async () => {
+  const p = state.current;
+  const quantity = clampQty($('#qty').value);
+  const btn = $('#add-to-cart');
+  btn.disabled = true;
+  try {
+    state.cart = await api('/api/cart', { method: 'POST', body: { product_id: p.id, variation_id: state.variationId, quantity } });
+    updateBadge();
+    closeModal();
+    const v = p.variations.find(v => v.id === state.variationId);
+    toast(`Added ${quantity} × ${p.name}${v ? ' (' + v.name + ')' : ''} to your cart`);
+  } catch (e) {
+    if (e.status !== 401) toast(e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+function closeModal() {
+  $('#modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+$('#modal-close').addEventListener('click', closeModal);
+$('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+/* ---------------- cart ---------------- */
+async function refreshCart() {
+  try { state.cart = await api('/api/cart'); } catch { state.cart = null; }
+  updateBadge();
+}
+function updateBadge() {
+  const n = state.cart ? state.cart.item_count : 0;
+  const b = $('#cart-badge');
+  b.textContent = n > 99 ? '99+' : n;
+  b.classList.toggle('hidden', n === 0);
+}
+
+async function renderCart() {
+  await refreshCart();
+  drawCart();
+}
+
+function drawCart() {
+  updateBadge();
+  const c = state.cart;
+  const lines = $('#cart-lines');
+  const empty = !c || !c.items.length;
+  $('#cart-summary').classList.toggle('hidden', empty);
+  if (empty) {
+    lines.innerHTML = `<div class="empty"><h3>Your cart is empty</h3><div>Find the parts you need and add them here.</div><button class="btn primary" data-goto="products">Browse products</button></div>`;
+    return;
+  }
+  lines.innerHTML = `<div class="panel">${c.items.map(i => `
+    <div class="line" data-line="${i.id}">
+      <div class="thumb">${thumbHtml(i.image_id, i.product_name)}</div>
+      <div>
+        <div class="line-name" data-product="${i.product_id}">${esc(i.product_name)}</div>
+        <div class="line-meta">${i.variation_name ? esc(i.variation_name) + ' · ' : ''}${money(i.unit_price_cents)} each</div>
+      </div>
+      <div class="line-right">
+        <div class="line-total">${money(i.line_total_cents)}</div>
+        <div class="line-actions">
+          <div class="stepper">
+            <button type="button" data-qty="-1" aria-label="Decrease">−</button>
+            <input type="number" value="${i.quantity}" min="1" max="999" data-qty-input aria-label="Quantity">
+            <button type="button" data-qty="1" aria-label="Increase" ${i.quantity >= 999 ? 'disabled' : ''}>+</button>
+          </div>
+          <button class="icon-btn" data-remove aria-label="Remove" title="Remove">×</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+  $('#sum-items').textContent = c.item_count;
+  $('#sum-lines').textContent = c.items.length;
+  $('#sum-total').textContent = money(c.total_cents);
+}
+
+async function setLineQty(id, quantity) {
+  try {
+    state.cart = await api('/api/cart/' + id, { method: 'PATCH', body: { quantity } });
+    drawCart();
+  } catch (e) {
+    if (e.status !== 401) toast(e.message, true);
+    renderCart();
+  }
+}
+
+$('#cart-lines').addEventListener('click', async (e) => {
+  const line = e.target.closest('[data-line]');
+  if (!line) return;
+  const id = Number(line.dataset.line);
+  const input = $('[data-qty-input]', line);
+  if (e.target.closest('[data-qty]')) {
+    const next = Number(input.value) + Number(e.target.closest('[data-qty]').dataset.qty);
+    if (next < 1) {
+      if (!confirm('Remove this item from your cart?')) return;
+    }
+    setLineQty(id, Math.min(999, next));
+  } else if (e.target.closest('[data-remove]')) {
+    setLineQty(id, 0);
+    toast('Removed from cart');
+  }
+});
+$('#cart-lines').addEventListener('change', (e) => {
+  if (!e.target.matches('[data-qty-input]')) return;
+  const id = Number(e.target.closest('[data-line]').dataset.line);
+  const v = Math.floor(Number(e.target.value));
+  setLineQty(id, Number.isFinite(v) ? Math.min(999, v) : 1);
+});
+$('#clear-cart').addEventListener('click', async () => {
+  if (!confirm('Remove everything from your cart?')) return;
+  try { await api('/api/cart', { method: 'DELETE' }); renderCart(); } catch (e) { toast(e.message, true); }
+});
+
+/* ---------------- boot ---------------- */
+(async function boot() {
+  await loadSettings();
+  try {
+    state.user = await api('/api/auth/me');
+    await enterStore();
+  } catch {
+    showAuth();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Lint + unit tests on Linux (fast feedback).
+  test:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Unit tests
+        run: cargo test --workspace --locked
+
+  # Build the two Windows .exe files.
+  windows:
+    name: Windows executables
+    needs: test
+    runs-on: windows-latest
+    permissions:
+      contents: write   # needed only to publish a GitHub Release on tags
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release binaries
+        run: cargo build --release --locked --target x86_64-pc-windows-msvc
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $out = "dist/MotoShop"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Copy-Item target/x86_64-pc-windows-msvc/release/shop-admin.exe    $out/
+          Copy-Item target/x86_64-pc-windows-msvc/release/shop-customer.exe $out/
+          Copy-Item README.md $out/
+          Get-ChildItem $out | Format-Table Name, Length
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: MotoShop-windows-x64
+          path: dist/MotoShop
+          if-no-files-found: error
+
+      - name: Zip for release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: Compress-Archive -Path dist/MotoShop -DestinationPath "MotoShop-windows-x64-${{ github.ref_name }}.zip"
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: MotoShop-windows-x64-${{ github.ref_name }}.zip
+          generate_release_notes: true

@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="/static/base.css">
+<style>
+  main { padding: 28px 0 60px; }
+  .page-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  .page-head h1 { font-size: 46px; text-transform: uppercase; margin-top: 6px; }
+  .admin-tag { background: var(--panel-2); border: 1px solid var(--line-2); color: var(--accent-2); font: 700 11px/1 var(--body); letter-spacing: .14em; padding: 5px 8px; border-radius: 6px; text-transform: uppercase; }
+
+  /* home tab */
+  .home-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; }
+  .rowlist { display: grid; }
+  .row { display: grid; grid-template-columns: 28px 56px 1fr auto; gap: 14px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: 0; }
+  .row.no-pos { grid-template-columns: 56px 1fr auto; }
+  .row .pos { font: 700 20px/1 var(--display); color: var(--faint); text-align: center; }
+  .row .thumb { width: 56px; aspect-ratio: 1; border-radius: 9px; }
+  .row .thumb .ph { width: 56%; }
+  .row-name { font-weight: 600; line-height: 1.25; }
+  .row-meta { color: var(--muted); font-size: 13px; }
+  .row-actions { display: flex; gap: 6px; }
+  .panel-scroll { max-height: 460px; overflow: auto; }
+  .panel-foot { padding: 14px 20px; border-top: 1px solid var(--line); }
+  .settings-form { display: grid; gap: 14px; }
+  .info { color: var(--faint); font-size: 12px; margin-top: 22px; word-break: break-all; }
+
+  /* products tab */
+  .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .toolbar input[type=search] { flex: 1 1 260px; width: auto; }
+  .toolbar select { width: auto; min-width: 180px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font: 600 11px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: rgba(255,255,255,.015); }
+  td .thumb { width: 52px; aspect-ratio: 1; border-radius: 9px; }
+  td .thumb .ph { width: 56%; }
+  .t-name { font-weight: 600; }
+  .t-sub { color: var(--muted); font-size: 13px; }
+  .t-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .star { color: var(--faint); font-size: 18px; }
+  .star.on { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+
+  /* editor */
+  .editor { display: grid; grid-template-columns: 300px 1fr; }
+  .editor-side { padding: 26px; border-right: 1px solid var(--line); background: var(--bg-2); display: grid; gap: 14px; align-content: start; }
+  .editor-main { padding: 26px 28px; display: grid; gap: 18px; }
+  .editor-main h2 { font-size: 32px; text-transform: uppercase; padding-right: 40px; }
+  .drop {
+    aspect-ratio: 1; border: 1.5px dashed var(--line-2); border-radius: 14px; display: grid; place-items: center;
+    overflow: hidden; cursor: pointer; position: relative; background: var(--panel); text-align: center; color: var(--muted);
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); }
+  #drop-content { width: 100%; height: 100%; display: grid; place-items: center; }
+  .drop img { width: 100%; height: 100%; object-fit: cover; }
+  .drop .drop-hint { display: grid; gap: 8px; justify-items: center; padding: 16px; font-size: 14px; }
+  .drop .drop-hint svg { width: 34px; color: var(--faint); }
+  .drop.busy::after { content: "Uploading…"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.6); color: var(--text); font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .section-label { font: 600 11px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-top: 4px; }
+  .var-row { display: grid; grid-template-columns: 1fr 160px 34px; gap: 8px; align-items: center; }
+  .var-list { display: grid; gap: 8px; }
+  .editor-foot { display: flex; gap: 10px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .editor-foot .form-error { flex: 1; align-self: center; }
+  .price-input { position: relative; }
+  .price-input span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+  .price-input input { padding-left: 30px; }
+
+  @media (max-width: 900px) {
+    .home-grid { grid-template-columns: 1fr; }
+    .editor { grid-template-columns: 1fr; }
+    .editor-side { border-right: 0; border-bottom: 1px solid var(--line); }
+    .drop { aspect-ratio: 16/9; }
+    .two { grid-template-columns: 1fr; }
+    .page-head h1 { font-size: 36px; }
+    .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="brand-mark" data-icon="mark"></span><span class="shop-name">Store</span> <span class="admin-tag">Admin</span></div>
+    <nav class="tabs">
+      <button class="tab" data-view="home">Home screen</button>
+      <button class="tab" data-view="products">Products</button>
+      <button class="tab" data-view="customers">Customers</button>
+    </nav>
+    <div class="spacer"></div>
+    <a class="btn sm" id="store-link" target="_blank" rel="noopener">Open store ↗</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ============ Home screen ============ -->
+  <section id="view-home" class="view hidden">
+    <div class="page-head">
+      <div><div class="eyebrow">Customer home tab</div><h1>Home screen</h1></div>
+      <div class="muted" style="max-width:46ch">Pick existing products to feature on the customer Home tab. Changes save immediately.</div>
+    </div>
+    <div class="home-grid">
+      <div class="panel">
+        <div class="panel-head"><h2>Featured</h2><span class="spacer"></span><span class="muted" id="featured-count"></span></div>
+        <div class="rowlist panel-scroll" id="featured-list"></div>
+      </div>
+      <div style="display:grid;gap:20px">
+        <div class="panel">
+          <div class="panel-head"><h2>Add from catalog</h2></div>
+          <div style="padding:14px 20px;border-bottom:1px solid var(--line)">
+            <input type="search" id="feature-search" placeholder="Search products to feature…">
+          </div>
+          <div class="rowlist panel-scroll" id="feature-candidates"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Store settings</h2></div>
+          <form class="panel-body settings-form" id="settings-form">
+            <label class="field">Shop name <input type="text" name="shop_name" maxlength="60" required></label>
+            <label class="field">Tagline <input type="text" name="tagline" maxlength="160"></label>
+            <label class="field">Currency symbol <input type="text" name="currency" maxlength="5" style="max-width:120px" required></label>
+            <div style="display:flex;gap:10px;align-items:center"><button class="btn primary" type="submit">Save settings</button><span class="form-error" id="settings-error"></span></div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="info" id="db-info"></div>
+  </section>
+
+  <!-- ============ Products ============ -->
+  <section id="view-products" class="view hidden">
+    <div class="page-head">
+      <div><div class="eyebrow">Catalog</div><h1>Products</h1></div>
+      <button class="btn primary lg" id="new-product">+ New product</button>
+    </div>
+    <div class="toolbar">
+      <input type="search" id="product-search" placeholder="Search by name, category or model…">
+      <select id="category-filter"><option value="">All categories</option></select>
+    </div>
+    <div id="products-area"></div>
+  </section>
+
+  <!-- ============ Customers ============ -->
+  <section id="view-customers" class="view hidden">
+    <div class="page-head">
+      <div><div class="eyebrow">Accounts</div><h1>Customers</h1></div>
+      <div class="muted">Customers who signed up on the store.</div>
+    </div>
+    <div id="customers-area"></div>
+  </section>
+</main>
+
+<!-- ============ Product editor ============ -->
+<div id="editor" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="icon-btn modal-close" data-close aria-label="Close">×</button>
+    <form class="editor" id="editor-form" novalidate>
+      <div class="editor-side">
+        <div class="section-label">Main image</div>
+        <label class="drop" id="drop">
+          <input type="file" id="image-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          <div id="drop-content"></div>
+        </label>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn sm" id="pick-image">Choose image</button>
+          <button type="button" class="btn sm ghost danger" id="remove-image">Remove</button>
+        </div>
+        <div class="hint">PNG, JPG, WEBP or GIF. Large photos are resized automatically.</div>
+        <label class="field" style="margin-top:8px"><span>Feature on Home screen</span>
+          <span style="display:flex;gap:10px;align-items:center;color:var(--text);font-weight:500"><input type="checkbox" name="featured" style="width:18px;height:18px;accent-color:var(--accent)"> Show this product as featured</span>
+        </label>
+      </div>
+      <div class="editor-main">
+        <h2 id="editor-title">New product</h2>
+
+        <div class="section-label">1 · Main item</div>
+        <div class="two">
+          <label class="field">Item name <input type="text" name="name" maxlength="200" placeholder="e.g. 4-Piston Front Brake Caliper" required></label>
+          <label class="field">Category <input type="text" name="category" list="category-list" placeholder="e.g. Brakes"></label>
+        </div>
+        <datalist id="category-list"></datalist>
+
+        <div class="section-label">2 · Description</div>
+        <label class="field"><textarea name="description" rows="4" placeholder="What it is, what it's made of, why riders want it…"></textarea></label>
+
+        <div class="section-label">3 · Sell price</div>
+        <label class="field">Base price
+          <span class="price-input"><span class="cur">₱</span><input type="number" name="price" min="0" step="0.01" placeholder="0.00" required></span>
+        </label>
+
+        <div class="section-label">4 · Variations</div>
+        <div class="hint" style="margin-top:-10px">Colors, sizes, specs… Leave a variation's price empty to use the base price. Customers must pick one when variations exist.</div>
+        <div class="var-list" id="var-list"></div>
+        <div><button type="button" class="btn sm" id="add-var">+ Add variation</button></div>
+
+        <div class="two">
+          <label class="field"><span class="section-label" style="margin:0 0 4px">5 · Features</span>
+            <textarea name="features" rows="5" placeholder="One feature per line&#10;CNC-machined aluminum&#10;Includes mounting bolts"></textarea>
+          </label>
+          <label class="field"><span class="section-label" style="margin:0 0 4px">6 · Available for</span>
+            <textarea name="available_for" rows="5" placeholder="One model per line&#10;Yamaha NMAX 155&#10;Honda Click 125i"></textarea>
+          </label>
+        </div>
+
+        <div class="editor-foot">
+          <div class="form-error" id="editor-error"></div>
+          <button type="button" class="btn ghost danger hidden" id="delete-product">Delete</button>
+          <button type="button" class="btn" data-close>Cancel</button>
+          <button type="submit" class="btn primary" id="save-product">Save product</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const ICONS = {
+  mark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg>',
+  part: '<svg class="ph" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><circle cx="32" cy="32" r="26"/><circle cx="32" cy="32" r="9"/><circle cx="32" cy="14" r="2.5" fill="currentColor"/><circle cx="32" cy="50" r="2.5" fill="currentColor"/><circle cx="14" cy="32" r="2.5" fill="currentColor"/><circle cx="50" cy="32" r="2.5" fill="currentColor"/><circle cx="19.3" cy="19.3" r="2.5" fill="currentColor"/><circle cx="44.7" cy="44.7" r="2.5" fill="currentColor"/><circle cx="44.7" cy="19.3" r="2.5" fill="currentColor"/><circle cx="19.3" cy="44.7" r="2.5" fill="currentColor"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/></svg>',
+};
+
+const state = { settings: { currency: '₱', shop_name: 'Store', tagline: '' }, products: [], featured: [], categories: [],
+  q: '', category: '', editing: null, imageId: null };
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = (cents) => state.settings.currency + (cents / 100).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const toCents = (v) => Math.round(parseFloat(String(v).replace(/,/g, '')) * 100);
+const fromCents = (c) => (c / 100).toFixed(2);
+const lines = (txt) => String(txt || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+const thumb = (p) => p.image_id ? `<img src="/images/${p.image_id}" alt="" loading="lazy">` : ICONS.part;
+
+$$('[data-icon]').forEach(el => (el.innerHTML = ICONS[el.dataset.icon]));
+
+let toastTimer;
+function toast(msg, error = false) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'show' + (error ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.className = ''), 2600);
+}
+
+async function api(path, { method = 'GET', body } = {}) {
+  const res = await fetch(path, {
+    method,
+    headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!res.ok) throw new Error((data && data.error) || text || res.statusText);
+  return data;
+}
+
+/* ---------------- routing ---------------- */
+const VIEWS = ['home', 'products', 'customers'];
+function route() {
+  const view = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  $$('.view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-' + view));
+  if (view === 'home') loadHome();
+  if (view === 'products') loadProducts();
+  if (view === 'customers') loadCustomers();
+}
+window.addEventListener('hashchange', route);
+$$('.tab').forEach(t => t.addEventListener('click', () => (location.hash = t.dataset.view)));
+
+/* ---------------- settings & info ---------------- */
+function applySettings() {
+  document.title = state.settings.shop_name + ' · Admin';
+  $$('.shop-name').forEach(el => (el.textContent = state.settings.shop_name));
+  $$('.cur').forEach(el => (el.textContent = state.settings.currency));
+  const f = $('#settings-form');
+  f.shop_name.value = state.settings.shop_name;
+  f.tagline.value = state.settings.tagline;
+  f.currency.value = state.settings.currency;
+}
+$('#settings-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  $('#settings-error').textContent = '';
+  try {
+    state.settings = await api('/api/settings', { method: 'PUT', body: { shop_name: f.shop_name.value, tagline: f.tagline.value, currency: f.currency.value } });
+    applySettings();
+    renderFeatured();
+    toast('Store settings saved');
+  } catch (ex) { $('#settings-error').textContent = ex.message; }
+});
+
+/* ---------------- home screen / featured ---------------- */
+async function loadAllProducts() {
+  state.products = await api('/api/products');
+}
+async function loadHome() {
+  try {
+    const [featured] = await Promise.all([api('/api/featured'), loadAllProducts()]);
+    state.featured = featured;
+    renderFeatured();
+  } catch (e) { toast(e.message, true); }
+}
+
+function renderFeatured() {
+  const list = $('#featured-list');
+  $('#featured-count').textContent = state.featured.length ? `${state.featured.length} on home` : '';
+  list.innerHTML = state.featured.length ? state.featured.map((p, i) => `
+    <div class="row" data-id="${p.id}">
+      <div class="pos">${i + 1}</div>
+      <div class="thumb">${thumb(p)}</div>
+      <div><div class="row-name">${esc(p.name)}</div><div class="row-meta">${esc(p.category || 'Uncategorized')} · ${money(p.price_cents)}</div></div>
+      <div class="row-actions">
+        <button class="icon-btn" data-move="-1" title="Move up" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="icon-btn" data-move="1" title="Move down" ${i === state.featured.length - 1 ? 'disabled' : ''}>↓</button>
+        <button class="icon-btn" data-unfeature title="Remove from home">×</button>
+      </div>
+    </div>`).join('') :
+    `<div style="padding:20px"><div class="empty"><h3>No featured products</h3><div>Add products from the catalog on the right — they’ll appear on the customer Home tab.</div></div></div>`;
+  renderCandidates();
+}
+
+function renderCandidates() {
+  const ids = new Set(state.featured.map(p => p.id));
+  const q = $('#feature-search').value.trim().toLowerCase();
+  const items = state.products.filter(p => !ids.has(p.id) &&
+    (!q || (p.name + ' ' + p.category + ' ' + p.available_for.join(' ')).toLowerCase().includes(q)));
+  const box = $('#feature-candidates');
+  if (!state.products.length) {
+    box.innerHTML = `<div style="padding:20px" class="muted">No products yet. <a href="#products">Add your first product</a>.</div>`;
+    return;
+  }
+  box.innerHTML = items.length ? items.map(p => `
+    <div class="row no-pos" data-id="${p.id}">
+      <div class="thumb">${thumb(p)}</div>
+      <div><div class="row-name">${esc(p.name)}</div><div class="row-meta">${esc(p.category || 'Uncategorized')} · ${money(p.price_cents)}</div></div>
+      <div class="row-actions"><button class="btn sm" data-feature>+ Feature</button></div>
+    </div>`).join('') :
+    `<div style="padding:20px" class="muted">${q ? 'No matching products.' : 'Every product is already featured.'}</div>`;
+}
+$('#feature-search').addEventListener('input', renderCandidates);
+
+async function saveFeatured(ids, msg) {
+  try {
+    state.featured = await api('/api/featured', { method: 'PUT', body: { product_ids: ids } });
+    renderFeatured();
+    if (msg) toast(msg);
+  } catch (e) { toast(e.message, true); }
+}
+
+$('#featured-list').addEventListener('click', (e) => {
+  const row = e.target.closest('[data-id]');
+  if (!row) return;
+  const id = Number(row.dataset.id);
+  const ids = state.featured.map(p => p.id);
+  const i = ids.indexOf(id);
+  const mv = e.target.closest('[data-move]');
+  if (mv) {
+    const j = i + Number(mv.dataset.move);
+    if (j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    saveFeatured(ids);
+  } else if (e.target.closest('[data-unfeature]')) {
+    saveFeatured(ids.filter(x => x !== id), 'Removed from Home screen');
+  }
+});
+$('#feature-candidates').addEventListener('click', (e) => {
+  if (!e.target.closest('[data-feature]')) return;
+  const id = Number(e.target.closest('[data-id]').dataset.id);
+  saveFeatured([...state.featured.map(p => p.id), id], 'Added to Home screen');
+});
+
+/* ---------------- products ---------------- */
+async function loadCategories() {
+  try { state.categories = await api('/api/categories'); } catch { state.categories = []; }
+  const sel = $('#category-filter');
+  if (state.category && !state.categories.includes(state.category)) state.category = '';
+  sel.innerHTML = '<option value="">All categories</option>' + state.categories.map(c => `<option ${c === state.category ? 'selected' : ''}>${esc(c)}</option>`).join('');
+  $('#category-list').innerHTML = state.categories.map(c => `<option value="${esc(c)}">`).join('');
+}
+
+let productSeq = 0;
+async function loadProducts() {
+  const seq = ++productSeq;
+  await loadCategories();
+  try {
+    const items = await api('/api/products?' + new URLSearchParams({ q: state.q, category: state.category }));
+    if (seq !== productSeq) return;
+    renderProducts(items);
+  } catch (e) { toast(e.message, true); }
+}
+
+function renderProducts(items) {
+  const area = $('#products-area');
+  if (!items.length) {
+    const filtered = state.q || state.category;
+    area.innerHTML = `<div class="empty"><h3>${filtered ? 'No matching products' : 'Your catalog is empty'}</h3>
+      <div>${filtered ? 'Try a different search.' : 'Add the parts you sell — they show up in the customer store right away.'}</div>
+      ${filtered ? '' : '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn primary" data-new>+ New product</button><button class="btn" id="seed-demo">Load sample products</button></div>'}</div>`;
+    return;
+  }
+  area.innerHTML = `<div class="panel table-wrap"><table>
+    <thead><tr><th style="width:68px"></th><th>Item</th><th class="hide-sm">Variations</th><th>Price</th><th class="hide-sm" title="Featured on Home">Home</th><th></th></tr></thead>
+    <tbody>${items.map(p => `
+      <tr data-id="${p.id}">
+        <td><div class="thumb">${thumb(p)}</div></td>
+        <td><div class="t-name">${esc(p.name)}</div><div class="t-sub">${esc(p.category || 'Uncategorized')}${p.available_for.length ? ' · fits ' + p.available_for.length + ' model' + (p.available_for.length > 1 ? 's' : '') : ''}</div></td>
+        <td class="hide-sm t-sub">${p.variations.length ? p.variations.map(v => esc(v.name)).join(', ') : '—'}</td>
+        <td style="white-space:nowrap">${money(p.price_cents)}</td>
+        <td class="hide-sm"><span class="star ${p.featured ? 'on' : ''}" title="${p.featured ? 'Featured on Home' : 'Not featured'}">★</span></td>
+        <td><div class="t-actions"><button class="btn sm" data-edit>Edit</button><button class="btn sm ghost danger" data-delete>Delete</button></div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+}
+
+let searchTimer;
+$('#product-search').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { state.q = e.target.value; loadProducts(); }, 200);
+});
+$('#category-filter').addEventListener('change', (e) => { state.category = e.target.value; loadProducts(); });
+$('#new-product').addEventListener('click', () => openEditor(null));
+
+$('#products-area').addEventListener('click', async (e) => {
+  if (e.target.closest('[data-new]')) return openEditor(null);
+  if (e.target.id === 'seed-demo') {
+    try { const r = await api('/api/demo', { method: 'POST' }); toast(`Added ${r.added} sample products`); loadProducts(); }
+    catch (ex) { toast(ex.message, true); }
+    return;
+  }
+  const row = e.target.closest('tr[data-id]');
+  if (!row) return;
+  const id = Number(row.dataset.id);
+  if (e.target.closest('[data-delete]')) return deleteProduct(id);
+  openEditor(id);
+});
+
+async function deleteProduct(id) {
+  let name = 'this product';
+  try { name = (await api('/api/products/' + id)).name; } catch {}
+  if (!confirm(`Delete "${name}"? It will also be removed from the Home screen and from customers' carts.`)) return false;
+  try {
+    await api('/api/products/' + id, { method: 'DELETE' });
+    toast('Product deleted');
+    loadProducts();
+    return true;
+  } catch (e) { toast(e.message, true); return false; }
+}
+
+/* ---------------- editor ---------------- */
+function varRow(v = { name: '', price_cents: null }) {
+  const div = document.createElement('div');
+  div.className = 'var-row';
+  if (v.id) div.dataset.id = v.id;
+  div.innerHTML = `<input type="text" placeholder="e.g. Red, 120 links, Size M" value="${esc(v.name)}" data-vname>
+    <span class="price-input"><span class="cur">${esc(state.settings.currency)}</span><input type="number" min="0" step="0.01" placeholder="Base price" value="${v.price_cents != null ? fromCents(v.price_cents) : ''}" data-vprice></span>
+    <button type="button" class="icon-btn" title="Remove variation" data-vremove>×</button>`;
+  return div;
+}
+$('#add-var').addEventListener('click', () => { const r = varRow(); $('#var-list').append(r); $('[data-vname]', r).focus(); });
+$('#var-list').addEventListener('click', (e) => { if (e.target.closest('[data-vremove]')) e.target.closest('.var-row').remove(); });
+
+function setImage(id) {
+  state.imageId = id;
+  $('#drop-content').innerHTML = id ? `<img src="/images/${id}" alt="">` :
+    `<div class="drop-hint">${ICONS.upload}<div><b style="color:var(--text)">Click or drop an image</b><br>to upload the main photo</div></div>`;
+  $('#remove-image').classList.toggle('hidden', !id);
+}
+
+async function openEditor(id) {
+  const f = $('#editor-form');
+  f.reset();
+  $('#editor-error').textContent = '';
+  $('#var-list').innerHTML = '';
+  let p = null;
+  if (id) {
+    try { p = await api('/api/products/' + id); } catch (e) { toast(e.message, true); return; }
+  }
+  state.editing = p;
+  $('#editor-title').textContent = p ? 'Edit product' : 'New product';
+  $('#delete-product').classList.toggle('hidden', !p);
+  if (p) {
+    f.name.value = p.name;
+    f.category.value = p.category;
+    f.description.value = p.description;
+    f.price.value = fromCents(p.price_cents);
+    f.features.value = p.features.join('\n');
+    f.available_for.value = p.available_for.join('\n');
+    f.featured.checked = p.featured;
+    p.variations.forEach(v => $('#var-list').append(varRow(v)));
+  }
+  setImage(p ? p.image_id : null);
+  $('#editor').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $('#editor .modal-box').scrollTop = 0;
+  f.name.focus({ preventScroll: true });
+}
+function closeEditor() {
+  $('#editor').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+$$('#editor [data-close]').forEach(b => b.addEventListener('click', closeEditor));
+$('#editor').addEventListener('click', (e) => { if (e.target.id === 'editor') closeEditor(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#editor').classList.contains('hidden')) closeEditor(); });
+$('#delete-product').addEventListener('click', async () => { if (state.editing && await deleteProduct(state.editing.id)) closeEditor(); });
+
+// image upload (resized in the browser to keep the database small)
+$('#pick-image').addEventListener('click', () => $('#image-file').click());
+$('#remove-image').addEventListener('click', () => setImage(null));
+$('#image-file').addEventListener('change', (e) => { if (e.target.files[0]) uploadImage(e.target.files[0]); e.target.value = ''; });
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => { const file = e.dataTransfer.files[0]; if (file) uploadImage(file); });
+
+function readAsDataURL(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+}
+async function resizeImage(file, max = 1400) {
+  const src = await readAsDataURL(file);
+  if (file.type === 'image/gif') return src; // keep animation
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
+  if (scale === 1 && file.size < 1.5e6) return src;
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+  const ctx = c.getContext('2d');
+  const png = file.type === 'image/png';
+  if (!png) { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); }
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  return png ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.86);
+}
+async function uploadImage(file) {
+  if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) { toast('Use a PNG, JPG, WEBP or GIF image', true); return; }
+  drop.classList.add('busy');
+  try {
+    const data_url = await resizeImage(file);
+    const r = await api('/api/images', { method: 'POST', body: { data_url } });
+    setImage(r.id);
+  } catch (e) { toast(e.message || 'Could not read that image', true); }
+  finally { drop.classList.remove('busy'); }
+}
+
+$('#editor-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const err = $('#editor-error');
+  err.textContent = '';
+  const price = toCents(f.price.value);
+  if (!f.name.value.trim()) { err.textContent = 'Item name is required.'; f.name.focus(); return; }
+  if (!Number.isFinite(price) || price < 0) { err.textContent = 'Enter a valid sell price.'; f.price.focus(); return; }
+  const variations = [];
+  for (const row of $$('.var-row', $('#var-list'))) {
+    const name = $('[data-vname]', row).value.trim();
+    const pv = $('[data-vprice]', row).value.trim();
+    if (!name && !pv) continue;
+    if (!name) { err.textContent = 'Every variation needs a name.'; $('[data-vname]', row).focus(); return; }
+    const pc = pv === '' ? null : toCents(pv);
+    if (pc !== null && (!Number.isFinite(pc) || pc < 0)) { err.textContent = `Invalid price for variation "${name}".`; return; }
+    variations.push({ id: row.dataset.id ? Number(row.dataset.id) : null, name, price_cents: pc });
+  }
+  const body = {
+    name: f.name.value, category: f.category.value, description: f.description.value,
+    price_cents: price, features: lines(f.features.value), available_for: lines(f.available_for.value),
+    image_id: state.imageId, variations,
+  };
+  const btn = $('#save-product');
+  btn.disabled = true;
+  try {
+    const saved = state.editing
+      ? await api('/api/products/' + state.editing.id, { method: 'PUT', body })
+      : await api('/api/products', { method: 'POST', body });
+    // sync featured checkbox
+    if (f.featured.checked !== saved.featured) {
+      const ids = (await api('/api/featured')).map(p => p.id);
+      await api('/api/featured', { method: 'PUT', body: { product_ids: f.featured.checked ? [...ids, saved.id] : ids.filter(x => x !== saved.id) } });
+    }
+    closeEditor();
+    toast(state.editing ? 'Product updated' : 'Product added');
+    route();
+  } catch (ex) { err.textContent = ex.message; }
+  finally { btn.disabled = false; }
+});
+
+/* ---------------- customers ---------------- */
+async function loadCustomers() {
+  const area = $('#customers-area');
+  try {
+    const list = await api('/api/customers');
+    area.innerHTML = list.length ? `<div class="panel table-wrap"><table>
+      <thead><tr><th>Name</th><th>Email</th><th class="hide-sm">Joined</th><th>Items in cart</th></tr></thead>
+      <tbody>${list.map(c => `<tr><td class="t-name">${esc(c.name)}</td><td>${esc(c.email)}</td><td class="hide-sm t-sub">${esc(c.created_at)} UTC</td><td>${c.cart_quantity}</td></tr>`).join('')}</tbody>
+    </table></div>` : `<div class="empty"><h3>No customers yet</h3><div>Accounts appear here when people sign up on the store.</div></div>`;
+  } catch (e) { toast(e.message, true); }
+}
+
+/* ---------------- boot ---------------- */
+(async function boot() {
+  try { state.settings = await api('/api/settings'); } catch {}
+  applySettings();
+  try {
+    const info = await api('/api/info');
+    $('#store-link').href = info.store_url;
+    $('#db-info').textContent = `Database: ${info.db_path} · v${info.version}`;
+  } catch {}
+  route();
+})();
+</script>
+</body>
+</html>
