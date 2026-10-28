@@ -37,6 +37,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(|| async { Html(PAGE) }))
         .route("/static/base.css", get(web::base_css))
+        .route("/static/logo.svg", get(web::logo_svg))
         .route("/images/{id}", get(web::image))
         .route(
             "/api/images",

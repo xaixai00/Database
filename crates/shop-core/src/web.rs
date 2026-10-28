@@ -71,6 +71,17 @@ pub async fn base_css() -> impl IntoResponse {
     )
 }
 
+/// `GET /static/logo.svg`
+pub async fn logo_svg() -> impl IntoResponse {
+    (
+        [
+            (header::CONTENT_TYPE, "image/svg+xml"),
+            (header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
+        crate::LOGO_SVG,
+    )
+}
+
 /// Print an error and keep the console window open on Windows before exiting.
 pub fn fatal(msg: &str) -> ! {
     eprintln!("\nERROR: {msg}\n");

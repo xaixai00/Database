@@ -33,6 +33,19 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
+/* Brand watermark: fixed to the viewport, always fully in frame, behind everything. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: max(24px, 6vmin);
+  z-index: -1;
+  pointer-events: none;
+  background: var(--watermark, #ffffff);
+  opacity: var(--watermark-opacity, .045);
+  -webkit-mask: url("/static/logo.svg") center / contain no-repeat;
+          mask: url("/static/logo.svg") center / contain no-repeat;
+}
+@media print { body::before { display: none; } }
 img { display: block; max-width: 100%; }
 a { color: var(--accent-2); }
 .hidden { display: none !important; }

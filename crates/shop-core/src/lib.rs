@@ -12,3 +12,6 @@ pub use db::{default_db_path, Db, DbError};
 
 /// Stylesheet shared by the admin and customer pages.
 pub const BASE_CSS: &str = include_str!("../assets/base.css");
+
+/// Brand logo, drawn faintly behind both apps (see `body::before` in base.css).
+pub const LOGO_SVG: &str = include_str!("../assets/logo.svg");
