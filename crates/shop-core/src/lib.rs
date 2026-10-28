@@ -15,3 +15,6 @@ pub const BASE_CSS: &str = include_str!("../assets/base.css");
 
 /// Brand logo, drawn faintly behind both apps (see `body::before` in base.css).
 pub const LOGO_SVG: &str = include_str!("../assets/logo.svg");
+
+/// JCS brand mark (orange), used in the top bars, sign-in screen and as the favicon.
+pub const JCS_LOGO_SVG: &str = include_str!("../assets/jcs-logo.svg");

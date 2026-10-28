@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
 <link rel="stylesheet" href="/static/base.css">
+<link rel="icon" type="image/svg+xml" href="/static/jcs-logo.svg">
 <style>
   /* ---------- auth screen ---------- */
   .auth-screen { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
@@ -117,7 +118,7 @@
 <!-- ================= Sign in / Sign up ================= -->
 <div id="auth" class="auth-screen hidden">
   <section class="auth-hero">
-    <div class="brand"><span class="brand-mark" data-icon="mark"></span><span class="shop-name">Store</span></div>
+    <div class="brand"><span class="brand-mark" role="img" aria-label="JCS logo"></span><span class="shop-name">Store</span></div>
     <div>
       <h1>Parts that <span>keep you</span> riding.</h1>
       <p class="shop-tagline"></p>
@@ -158,7 +159,7 @@
 <div id="app" class="hidden">
   <header class="topbar">
     <div class="wrap">
-      <div class="brand"><span class="brand-mark" data-icon="mark"></span><span class="shop-name">Store</span></div>
+      <div class="brand"><span class="brand-mark" role="img" aria-label="JCS logo"></span><span class="shop-name">Store</span></div>
       <nav class="tabs">
         <button class="tab" data-view="home">Home</button>
         <button class="tab" data-view="products">Products</button>

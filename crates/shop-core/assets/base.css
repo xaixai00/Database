@@ -75,12 +75,13 @@ h1, h2, h3, .display {
 }
 .topbar .wrap { display: flex; align-items: center; gap: 20px; height: 64px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 700 22px/1 var(--display); text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+/* JCS logo, painted in the accent orange via a mask so it stays crisp at any size. */
 .brand-mark {
-  width: 30px; height: 30px; border-radius: 8px; flex: none;
-  background: var(--accent); color: var(--accent-ink);
-  display: grid; place-items: center;
+  height: 32px; aspect-ratio: 723.7 / 567.3; flex: none;
+  background: var(--accent);
+  -webkit-mask: url("/static/jcs-logo.svg") center / contain no-repeat;
+          mask: url("/static/jcs-logo.svg") center / contain no-repeat;
 }
-.brand-mark svg { width: 18px; height: 18px; }
 .brand small { font: 600 11px/1 var(--body); letter-spacing: .14em; color: var(--muted); margin-left: 4px; }
 .tabs { display: flex; gap: 4px; margin-left: 12px; }
 .tab {

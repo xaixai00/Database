@@ -82,6 +82,17 @@ pub async fn logo_svg() -> impl IntoResponse {
     )
 }
 
+/// `GET /static/jcs-logo.svg`
+pub async fn jcs_logo_svg() -> impl IntoResponse {
+    (
+        [
+            (header::CONTENT_TYPE, "image/svg+xml"),
+            (header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
+        crate::JCS_LOGO_SVG,
+    )
+}
+
 /// Print an error and keep the console window open on Windows before exiting.
 pub fn fatal(msg: &str) -> ! {
     eprintln!("\nERROR: {msg}\n");
